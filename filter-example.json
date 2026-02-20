@@ -1,0 +1,12 @@
+{
+  "include": {
+    "users":  [],
+    "groups": [],
+    "roles":  []
+  },
+  "exclude": {
+    "users":  ["79bfbb33-4e6b-4013-8282-7232f1a5ed33", "f4753379-dfb0-4129-b65c-96fa794667b2"],
+    "groups": ["break-glass-accounts"],
+    "roles":  ["Global Administrator"]
+  }
+}

@@ -1,0 +1,51 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Cache and token files
+cache/
+token_cache/
+
+# Generated reports and outputs (including new folder structure)
+cainsight_reports_*/
+debug_permutations.json
+portal.html
+caInsight.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Keep directory structure files
+!.gitkeep
