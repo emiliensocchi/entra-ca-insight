@@ -60,6 +60,11 @@ This approach comes with 2 main advantages:
 - **📊 Historical Tracking & Comparison** - Track **scan history** across multiple runs, monitor **universal coverage trends** (Auth Strength, MFA, Block), compare configurations over time, and **export results** for compliance reporting.
 
 
+## 📑 Instructions
+
+See the [project's wiki](https://github.com/emiliensocchi/entra-ca-insight/wiki) for more information about CA Insight's design, analysis workflows, installation and usage. 
+
+
 ## 📸 Screenshots
 
 ### CLI Interface
