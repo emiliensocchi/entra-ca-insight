@@ -3,6 +3,11 @@
 Discover gaps in Entra Conditional Access policies before attackers do.
 
 
+## 📑 Instructions
+
+See the [project's wiki](https://github.com/emiliensocchi/entra-ca-insight/wiki) for more information about CA Insight's design, analysis workflows, installation and usage. 
+
+
 ## 🕳️ What is a Conditional Access Gap?
 
 A **gap** is a specific combination of access conditions (identity, application, platform, location, client type, etc.) for which **no Conditional Access policy enforces a strong control**, causing access to fall back to username and password.
@@ -58,11 +63,6 @@ This approach comes with 2 main advantages:
 - **🎯 Advanced Filtering & Scoping** - Scope analysis with **identity filters** (include/exclude specific identities), **target specific resources** (agent resources, cloud apps, user actions), automatically **exclude irrelevant policies** from gap detection.
 
 - **📊 Historical Tracking & Comparison** - Track **scan history** across multiple runs, monitor **universal coverage trends** (Auth Strength, MFA, Block), compare configurations over time, and **export results** for compliance reporting.
-
-
-## 📑 Instructions
-
-See the [project's wiki](https://github.com/emiliensocchi/entra-ca-insight/wiki) for more information about CA Insight's design, analysis workflows, installation and usage. 
 
 
 ## 📸 Screenshots
