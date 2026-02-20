@@ -1578,6 +1578,39 @@
             color: #e65100;
         }
 
+        /* Guest + User Actions Evaluation Scope Limitation Banner */
+        .guest-useraction-scope-banner {
+            display: none;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-left: 4px solid #f59e0b;
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.15);
+        }
+        .guest-useraction-scope-banner.visible {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .guest-useraction-scope-banner-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .guest-useraction-scope-banner-body {
+            font-size: 13px;
+            color: #78350f;
+            line-height: 1.55;
+        }
+        .guest-useraction-scope-banner-body strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #92400e;
+        }
+
         /* ===== SIDEBAR ELEMENT ===== */
         #appSidebar {
             display: flex;
@@ -2360,6 +2393,15 @@
                 </div>
                 <div class="workload-grant-control-banner-content">
                     <span id="workloadGrantControlIdentityType">Workload Identities</span> only support the <strong>"Block access"</strong> grant control. Other grant controls such as MFA or authentication strength are not available for this identity type.
+                </div>
+            </div>
+
+            <!-- Guest + User Actions Evaluation Scope Limitation Banner -->
+            <div id="guestUserActionScopeBanner" class="guest-useraction-scope-banner">
+                <span class="guest-useraction-scope-banner-icon">⚠️</span>
+                <div class="guest-useraction-scope-banner-body">
+                    <strong>Evaluation Scope Limitation</strong>
+                    This scan has evaluated only local guests (guests created in your tenant), as user actions for external guests apply to their home tenant.
                 </div>
             </div>
             
@@ -3675,6 +3717,14 @@
             } else if (targetResources === 'agent-resources') {
                 resourceIconEl.textContent = '🤖';
                 resourceTypeEl.textContent = 'Agent Resources';
+            }
+
+            // Show scope limitation banner only for guests + user-actions combination
+            const scopeBanner = document.getElementById('guestUserActionScopeBanner');
+            if (assignments === 'guests' && targetResources === 'user-actions') {
+                scopeBanner.classList.add('visible');
+            } else {
+                scopeBanner.classList.remove('visible');
             }
         }
         
