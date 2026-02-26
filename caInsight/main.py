@@ -287,8 +287,8 @@ def handle_critical_gap_scenario(
                 all_active_agents = json.load(f)
                 all_identity_ids = set([agent.get('id') for agent in all_active_agents])
     elif assignment_type == 'workload-identities':
-        # Workload identities are stored in service-principals.json in the policies folder
-        cache_file = cache_dir / "policies" / "service-principals.json"
+        # Workload identities are stored in service-principals.json in the tenant folder
+        cache_file = cache_dir / "tenant" / "active-workload-identities.json"
         if cache_file.exists():
             with open(cache_file, 'r', encoding='utf-8') as f:
                 all_service_principals = json.load(f)
