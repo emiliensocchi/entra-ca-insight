@@ -598,62 +598,81 @@ class PolicyFlattener:
     
     def _get_pim_eligible_group_members(self) -> Dict[str, Set[str]]:
         """Get PIM eligible group members (users eligible for group membership).
-        
+
         Returns:
             Dict[str, Set[str]]: Map of group_id -> set of eligible user_ids
         """
-        # Query: /identityGovernance/privilegedAccess/group/eligibilityScheduleInstances
-        # This returns all active PIM eligibility assignments for groups
-        
-        url = f"https://{self.api_client.msgraph_domain}/v1.0/identityGovernance/privilegedAccess/group/eligibilityScheduleInstances"
-        url += "?$expand=principal,group&$top=999"
-        
+        # Load groups so we can iterate with per-group filters
+        groups_cache = self.cache_dir / "policies" / "groups.json"
+        if not groups_cache.exists():
+            print("    Warning: groups.json cache not found, skipping PIM group eligibility")
+            return {}
+
+        with open(groups_cache, 'r', encoding='utf-8') as f:
+            groups = json.load(f)
+
+        base_url = (
+            f"https://{self.api_client.msgraph_domain}/v1.0"
+            f"/identityGovernance/privilegedAccess/group/eligibilityScheduleInstances"
+        )
         headers = {
             "Authorization": f"Bearer {self.api_client.token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        
-        eligible_map = defaultdict(set)
-        
-        try:
-            while url:
-                response = self.api_client.session.get(url, headers=headers, timeout=30)
-                
-                if response.status_code == 404:
-                    # PIM not available or no permissions
-                    print("    PIM group eligibility data not available (404)")
-                    break
-                elif response.status_code == 403:
-                    print("    Insufficient permissions to read PIM group eligibility")
-                    break
-                elif response.status_code != 200:
-                    print(f"    Failed to fetch PIM group eligibility: {response.status_code}")
-                    break
-                
-                data = response.json()
-                instances = data.get('value', [])
-                
-                for instance in instances:
-                    # Get group ID
-                    group_data = instance.get('group', {})
-                    group_id = group_data.get('id')
-                    
-                    # Get principal (user) ID
-                    principal_data = instance.get('principal', {})
-                    principal_id = principal_data.get('id')
-                    principal_type = principal_data.get('@odata.type', '')
-                    
-                    # Only include users (not other principal types)
-                    if group_id and principal_id and principal_type == '#microsoft.graph.user':
-                        eligible_map[group_id].add(principal_id)
-                
-                url = data.get('@odata.nextLink')
-            
-            print(f"    ✓ Found {sum(len(v) for v in eligible_map.values())} PIM eligible group memberships")
-            
-        except Exception as e:
-            print(f"    Warning: Failed to fetch PIM group eligibility: {e}")
-        
+
+        eligible_map: Dict[str, Set[str]] = defaultdict(set)
+        pim_unavailable = False  # set True on first 404/403 to skip remaining groups
+
+        for i, group in enumerate(groups):
+            if pim_unavailable:
+                break
+
+            group_id = group.get('id')
+            if not group_id:
+                continue
+
+            if i > 0 and i % 50 == 0:
+                print(f"    Queried PIM eligibility for {i}/{len(groups)} groups...")
+
+            # Filter by groupId — required by the API; use $top=999 for pagination
+            url: Optional[str] = (
+                f"{base_url}?$filter=groupId eq '{group_id}'&$top=999"
+            )
+
+            try:
+                while url:
+                    response = self.api_client.session.get(url, headers=headers, timeout=30)
+
+                    if response.status_code == 404:
+                        print("    PIM group eligibility data not available (404)")
+                        pim_unavailable = True
+                        break
+                    elif response.status_code == 403:
+                        print("    Insufficient permissions to read PIM group eligibility")
+                        pim_unavailable = True
+                        break
+                    elif response.status_code == 400 and response.json().get('error', {}).get('code') == 'ResourceTypeNotSupported':
+                        # The group is not supported by PIM for Groups (e.g. dynamic group, on‑premises‑synced group, or group that is part of Administrative Unit)
+                        break
+                    elif response.status_code != 200:
+                        print(f"    Failed to fetch PIM group eligibility for group {group_id}: {response.status_code}")
+                        break
+
+                    data = response.json()
+                    for instance in data.get('value', []):
+                        principal_id = instance.get('principalId')
+                        # principalType values: 'user', 'group', 'servicePrincipal'
+                        principal_type = instance.get('principalType', '')
+                        if principal_id and principal_type == 'user':
+                            eligible_map[group_id].add(principal_id)
+
+                    url = data.get('@odata.nextLink')
+
+            except Exception as e:
+                print(f"    Warning: Failed to fetch PIM group eligibility for group {group_id}: {e}")
+
+        total = sum(len(v) for v in eligible_map.values())
+        print(f"    ✓ Found {total} PIM eligible group memberships")
         return dict(eligible_map)
     
     def _get_pim_eligible_role_members(self) -> Dict[str, Set[str]]:
@@ -662,9 +681,6 @@ class PolicyFlattener:
         Returns:
             Dict[str, Set[str]]: Map of role_id -> set of eligible principal_ids
         """
-        # Query: /roleManagement/directory/roleEligibilityScheduleInstances
-        # This returns all active PIM eligibility assignments for directory roles
-        
         url = f"https://{self.api_client.msgraph_domain}/v1.0/roleManagement/directory/roleEligibilityScheduleInstances"
         url += "?$expand=principal,roleDefinition&$top=999"
         
