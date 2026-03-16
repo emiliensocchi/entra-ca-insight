@@ -1276,7 +1276,7 @@ Examples:
         print("Analysis Scope:")
         print(f"  Assignments:      {args.include_assignments}")
         print(f"  Target Resources: {args.target_resources}")
-        print(f"  Conditions:       {", ".join(conditions_to_use)}")
+        print(f"  Conditions:       {', '.join(conditions_to_use)}")
         print(f"{'='*60}")
         # Define progress callback to print status updates
         def progress_callback(percent: int, message: str):
