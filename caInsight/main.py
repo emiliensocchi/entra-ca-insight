@@ -582,17 +582,23 @@ def run_analysis(token: str, config: Dict, progress_callback=None, source: str =
         if assignments == 'users':
             mfa_covered, auth_strength_covered, block_covered = detector.detect_universal_coverage_for_users(
                 flattened_policies,
-                target_resource=config.get('target_resources')
+                target_resource=config.get('target_resources'),
+                token=token,
+                api_client=api_client
             )
         elif assignments == 'guests':
             mfa_covered, auth_strength_covered, block_covered = detector.detect_universal_coverage_for_guests(
                 flattened_policies,
-                target_resource=config.get('target_resources')
+                target_resource=config.get('target_resources'),
+                token=token,
+                api_client=api_client
             )
         elif assignments == 'agent-identities':
             universally_covered = detector.detect_universal_coverage_for_agents(
                 flattened_policies,
-                target_resource=config.get('target_resources')
+                target_resource=config.get('target_resources'),
+                token=token,
+                api_client=api_client
             )
             # Agent identities only support block control for now
             mfa_covered = set()
@@ -601,7 +607,9 @@ def run_analysis(token: str, config: Dict, progress_callback=None, source: str =
         else:  # workload-identities
             universally_covered = detector.detect_universal_coverage_for_workloads(
                 flattened_policies,
-                target_resource=config.get('target_resources')
+                target_resource=config.get('target_resources'),
+                token=token,
+                api_client=api_client
             )
             # Workload identities only support block control for now
             mfa_covered = set()
