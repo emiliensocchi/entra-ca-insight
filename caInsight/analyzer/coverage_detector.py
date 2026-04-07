@@ -50,7 +50,11 @@ class CoverageDetector:
 
             if include_users == ['All']:
                 all_active_users = api_client.get_all_active_members(use_cache=True)
-                include_users = [user.get('id') for user in all_active_users]
+                include_users = [user.get('id') for user in all_active_users]\
+            
+            if exclude_users == ['All']:
+                all_active_users = api_client.get_all_active_members(use_cache=True)
+                exclude_users = [user.get('id') for user in all_active_users]
                     
             # Determine coverage based on grant controls
             grant_controls = policy.get('grantControls', {})
@@ -89,7 +93,9 @@ class CoverageDetector:
     @staticmethod
     def detect_universal_coverage_for_guests(
         policies: List[Dict], 
-        target_resource: str
+        target_resource: str,
+        api_client: GraphAPIClient,
+        token: str        
     ) -> Tuple[Set[str], Set[str], Set[str]]:
         """Detect universal MFA, Auth Strength, and blocking coverage for guest users.
         
