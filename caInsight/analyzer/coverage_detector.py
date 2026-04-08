@@ -7,8 +7,6 @@ no additional conditions, providing baseline protection.
 """
 
 from typing import Dict, List, Set, Tuple
-from ..graph.api_client import GraphAPIClient
-from caInsight.graph import api_client
 
 
 class CoverageDetector:
@@ -17,9 +15,7 @@ class CoverageDetector:
     @staticmethod
     def detect_universal_coverage_for_users(
         policies: List[Dict], 
-        target_resource: str,
-        api_client: GraphAPIClient,
-        token: str
+        target_resource: str
     ) -> Tuple[Set[str], Set[str], Set[str]]:
         """Detect universal MFA, Auth Strength, and blocking coverage for users.
         
@@ -47,14 +43,6 @@ class CoverageDetector:
             users_section = conditions.get('users', {})
             include_users = users_section.get('includeUsers', [])
             exclude_users = users_section.get('excludeUsers', [])
-
-            if include_users == ['All']:
-                all_active_users = api_client.get_all_active_members(use_cache=True)
-                include_users = [user.get('id') for user in all_active_users]\
-            
-            if exclude_users == ['All']:
-                all_active_users = api_client.get_all_active_members(use_cache=True)
-                exclude_users = [user.get('id') for user in all_active_users]
                     
             # Determine coverage based on grant controls
             grant_controls = policy.get('grantControls', {})
@@ -93,9 +81,7 @@ class CoverageDetector:
     @staticmethod
     def detect_universal_coverage_for_guests(
         policies: List[Dict], 
-        target_resource: str,
-        api_client: GraphAPIClient,
-        token: str        
+        target_resource: str      
     ) -> Tuple[Set[str], Set[str], Set[str]]:
         """Detect universal MFA, Auth Strength, and blocking coverage for guest users.
         

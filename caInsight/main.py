@@ -582,16 +582,12 @@ def run_analysis(token: str, config: Dict, progress_callback=None, source: str =
         if assignments == 'users':
             mfa_covered, auth_strength_covered, block_covered = detector.detect_universal_coverage_for_users(
                 flattened_policies,
-                target_resource=config.get('target_resources'),
-                token=token,
-                api_client=api_client
+                target_resource=config.get('target_resources')
             )
         elif assignments == 'guests':
             mfa_covered, auth_strength_covered, block_covered = detector.detect_universal_coverage_for_guests(
                 flattened_policies,
-                target_resource=config.get('target_resources'),
-                token=token,
-                api_client=api_client
+                target_resource=config.get('target_resources')
             )
         elif assignments == 'agent-identities':
             universally_covered = detector.detect_universal_coverage_for_agents(
@@ -621,7 +617,6 @@ def run_analysis(token: str, config: Dict, progress_callback=None, source: str =
             if progress_callback:
                 progress_callback(30, "Resolving filter groups and roles to user IDs...")
             filter_config.resolve_groups_and_roles(api_client)
-        
         # Always retrieve all active identities from tenant to get accurate total
         if assignments == 'users':
             all_active_users = api_client.get_all_active_members(use_cache=True)
