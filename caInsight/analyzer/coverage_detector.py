@@ -43,7 +43,7 @@ class CoverageDetector:
             users_section = conditions.get('users', {})
             include_users = users_section.get('includeUsers', [])
             exclude_users = users_section.get('excludeUsers', [])
-            
+                    
             # Determine coverage based on grant controls
             grant_controls = policy.get('grantControls', {})
             built_in_controls = grant_controls.get('builtInControls', [])
@@ -81,7 +81,7 @@ class CoverageDetector:
     @staticmethod
     def detect_universal_coverage_for_guests(
         policies: List[Dict], 
-        target_resource: str
+        target_resource: str      
     ) -> Tuple[Set[str], Set[str], Set[str]]:
         """Detect universal MFA, Auth Strength, and blocking coverage for guest users.
         
