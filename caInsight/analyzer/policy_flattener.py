@@ -888,6 +888,27 @@ class PolicyFlattener:
         auth_strength = grant_controls.get('authenticationStrength')
         has_strong_controls = any(c in ['block', 'mfa'] for c in built_in_controls) or auth_strength
         
+        # === Handle 'All' in includeUsers/excludeUsers ===
+        # Policies targeting "All users" also apply to guests
+        include_users = users_section.get('includeUsers', [])
+        if 'All' in include_users:
+            all_guests = guest_type_maps.get('AllGuests', set())
+            resolved_users = set(u for u in include_users if u != 'All')
+            resolved_users.update(all_guests)
+            users_section['includeUsers'] = list(resolved_users)
+            # 'All' covers all guest types including non-resolvable
+            if has_strong_controls:
+                for gt in non_resolvable_types:
+                    if gt not in covered_non_resolvable:
+                        covered_non_resolvable.append(gt)
+        
+        exclude_users = users_section.get('excludeUsers', [])
+        if 'All' in exclude_users:
+            all_guests = guest_type_maps.get('AllGuests', set())
+            resolved_users = set(u for u in exclude_users if u != 'All')
+            resolved_users.update(all_guests)
+            users_section['excludeUsers'] = list(resolved_users)
+        
         # === Handle includeGuestsOrExternalUsers (modern) ===
         include_guests_or_external = users_section.get('includeGuestsOrExternalUsers')
         if include_guests_or_external:
