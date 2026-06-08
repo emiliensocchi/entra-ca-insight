@@ -844,7 +844,7 @@ def run_analysis(token: str, config: Dict, progress_callback=None, source: str =
         
         # Thread-safe counters and locks
         lock = threading.Lock()
-        progress_counter = {'evaluated': 0, 'protected': 0}
+        progress_counter = {'evaluated': 0, 'protected': 0, 'early_terminated': 0}
         
         def evaluate_identity_worker(identity_id, permutations):
             """Worker function for evaluating a single identity (thread-safe)."""
@@ -867,9 +867,9 @@ def run_analysis(token: str, config: Dict, progress_callback=None, source: str =
                     pct_complete = 50 + int(30 * (progress_counter['evaluated'] / len(identity_permutations)))
                     progress_callback(pct_complete, f"Evaluated {progress_counter['evaluated']:_}/{len(identity_permutations):_} identities...".replace('_', ' '))
                 
-                # Optional: Log early termination statistics (within lock to prevent concurrent printing)
+                # Track early termination count for summary
                 if result.get('early_terminated'):
-                    print(f"  ⚡ Early termination: {result['termination_reason']}", flush=True)
+                    progress_counter['early_terminated'] += 1
             
             return result
         
@@ -942,6 +942,10 @@ def run_analysis(token: str, config: Dict, progress_callback=None, source: str =
         
         # Update final counters
         evaluated_identities = progress_counter['evaluated']
+        
+        # Log early termination summary
+        if progress_counter['early_terminated'] > 0:
+            print(f"  ⚡ Early termination applied to {progress_counter['early_terminated']}/{evaluated_identities} identities ({early_termination_pct}% threshold, {permutations_per_identity} permutations per identity)")
         
         # Immediately report progress after evaluation loop completes
         if progress_callback:
