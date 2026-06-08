@@ -428,12 +428,12 @@ class GraphAPIClient:
         # Filter to B2B members
         b2b_members = []
         
-        tenant_domain = self._get_tenant_domain()
+        tenant_domains = self._get_all_tenant_domains()
         for member in all_members:
-            # Check if member has any identities with an issuer different from our tenant domain
+            # Check if member has any identities with an issuer different from all tenant domains
             identities = member.get('identities', [])
             is_external_b2b = any(
-                id.get('issuer') and id.get('issuer') != tenant_domain
+                id.get('issuer') and id.get('issuer') not in tenant_domains
                 for id in identities if isinstance(id, dict)
             )
             if is_external_b2b:
@@ -446,11 +446,11 @@ class GraphAPIClient:
         
         return b2b_members
 
-    def _get_tenant_domain(self) -> str:
-        """Get the tenant's primary domain from the token or organization info.
+    def _get_all_tenant_domains(self) -> set:
+        """Get all verified domains for the tenant from organization info.
         
         Returns:
-            str: The tenant's primary domain
+            set: Set of all verified domain names for the tenant
         """
         # Try to get from cached org info or make a quick API call
         try:
@@ -465,12 +465,10 @@ class GraphAPIClient:
                 orgs = data.get('value', [])
                 if orgs:
                     domains = orgs[0].get('verifiedDomains', [])
-                    for domain in domains:
-                        if domain.get('isDefault'):
-                            return domain.get('name', '')
+                    return {domain.get('name') for domain in domains if domain.get('name')}
         except:
             pass
-        return ''
+        return set()
 
     def get_all_active_cloud_applications(self, use_cache: bool = True) -> List[Dict]:
         """Get all active cloud applications in the tenant.
