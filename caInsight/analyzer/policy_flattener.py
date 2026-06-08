@@ -730,6 +730,21 @@ class PolicyFlattener:
         
         return dict(eligible_map)
     
+    def _get_all_users(self) -> List[Dict]:
+        """Get all users in the tenant.
+        
+        Returns:
+            List[Dict]: List of user objects
+        """
+        cache_file = self.cache_dir / "tenant" / "active-members.json"
+        if cache_file.exists():
+            with open(cache_file, 'r', encoding='utf-8') as f:
+                all_active_users = json.load(f)
+                all_identity_ids = [user.get('id') for user in all_active_users]
+            return all_identity_ids        
+        # If not cached, return empty list
+        return []   
+    
     def _get_all_agent_identities(self) -> List[Dict]:
         """Get all agent identities in the tenant.
         
@@ -781,6 +796,15 @@ class PolicyFlattener:
         flattened = policy.copy()
         conditions = flattened.get('conditions', {})
         users_section = conditions.get('users', {})
+
+        # Handle 'All' in includeUsers/excludeUsers by replacing with all user IDs
+        if users_section['includeUsers'] == ['All']:
+            all_users = self._get_all_users()
+            users_section['includeUsers'] = list(all_users)
+
+        if users_section['excludeUsers'] == ['All']:
+            all_users = self._get_all_users()
+            users_section['excludeUsers'] = list(all_users)
         
         # Resolve includeGroups -> includeUsers
         include_groups = users_section.get('includeGroups', [])
